@@ -37,6 +37,7 @@ public class HdfsInotifySpout extends BaseRichSpout {
 
     private HdfsAdmin dfs;
     private DFSInotifyEventInputStream stream;
+    private long lastReadTxId;
 
     public HdfsInotifySpout(String hdfsUri, String watchedPath, String streamId){
         this.watchedPath = watchedPath;
@@ -54,6 +55,7 @@ public class HdfsInotifySpout extends BaseRichSpout {
     
             this.dfs = new HdfsAdmin(uri, conf);
             this.stream = this.dfs.getInotifyEventStream();
+            this.lastReadTxId = 0;
         } catch(IOException | URISyntaxException e){
             collector.reportError(e);
         }
@@ -62,6 +64,7 @@ public class HdfsInotifySpout extends BaseRichSpout {
     @Override
     public void nextTuple() {
         try {
+        	// TODO Save last read txid (HDFS-7446)
             Event raw_event = null;
             while ((raw_event = this.stream.poll(100, TimeUnit.MILLISECONDS)) !=null ){
                 if(raw_event instanceof CloseEvent){
@@ -87,8 +90,9 @@ public class HdfsInotifySpout extends BaseRichSpout {
     
     @Override
     public void activate() {
+    	// TODO Try and restart from last read txid (HDFS-7446)
         try {
-            this.stream = this.dfs.getInotifyEventStream();
+            this.stream = lastReadTxId != 0 ? this.dfs.getInotifyEventStream(lastReadTxId) : this.dfs.getInotifyEventStream();
         } catch (IOException e) {
             collector.reportError(e);
         }
