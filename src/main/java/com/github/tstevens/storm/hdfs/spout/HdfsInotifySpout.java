@@ -66,7 +66,7 @@ public class HdfsInotifySpout extends BaseRichSpout {
         try {
         	// TODO Save last read txid (HDFS-7446)
             Event raw_event = null;
-            while ((raw_event = this.stream.poll(100, TimeUnit.MILLISECONDS)) !=null ){
+            while ((raw_event = this.stream.poll(100, TimeUnit.MILLISECONDS)) !=null ){ // TODO Add jitter to wait time
                 if(raw_event instanceof CloseEvent){
                     CloseEvent closeEvent = (CloseEvent) raw_event;
                     if(closeEvent.getPath().startsWith(watchedPath)){
