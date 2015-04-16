@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
@@ -40,8 +41,8 @@ public class HdfsInotifySpout extends BaseRichSpout {
     private long lastReadTxId;
 
     public HdfsInotifySpout(URI hdfsUri, String watchedPath){
-        this.watchedPath = watchedPath;
-        this.hdfsUri = hdfsUri;
+        this.watchedPath = Objects.requireNonNull(watchedPath);
+        this.hdfsUri = Objects.requireNonNull(hdfsUri);
     }
 
     @Override
