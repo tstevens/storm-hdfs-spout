@@ -26,6 +26,8 @@ public class HdfsInotifySpout extends BaseRichSpout {
 
     private static final long serialVersionUID = 7252687842097019979L;
 
+    private static final String STREAM_ID = "hdfs-events";
+	private static final String EVENT_TYPE_FIELD = "type";
     private static final String PATH_FIELD = "path";
     private static final String SIZE_FIELD = "size";
     private static final String TIME_FIELD = "time";
