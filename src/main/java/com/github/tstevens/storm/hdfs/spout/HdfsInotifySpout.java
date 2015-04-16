@@ -49,6 +49,8 @@ public class HdfsInotifySpout extends BaseRichSpout {
     @Override
     public void open(@SuppressWarnings("rawtypes") Map config, TopologyContext context, SpoutOutputCollector collector) {
         this.collector = collector;
+        lastReadTxId = 0;
+
 
         try {
             URI uri = new URI(hdfsUri);
