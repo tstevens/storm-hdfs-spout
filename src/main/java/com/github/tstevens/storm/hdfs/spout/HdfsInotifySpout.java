@@ -2,7 +2,6 @@ package com.github.tstevens.storm.hdfs.spout;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -34,14 +33,13 @@ public class HdfsInotifySpout extends BaseRichSpout {
 
     private ISpoutOutputCollector collector;
     private String watchedPath;
-    private String streamId;
-    private String hdfsUri;
+    private URI hdfsUri;
 
     private HdfsAdmin dfs;
     private DFSInotifyEventInputStream stream;
     private long lastReadTxId;
 
-    public HdfsInotifySpout(String hdfsUri, String watchedPath){
+    public HdfsInotifySpout(URI hdfsUri, String watchedPath){
         this.watchedPath = watchedPath;
         this.hdfsUri = hdfsUri;
     }
@@ -51,17 +49,14 @@ public class HdfsInotifySpout extends BaseRichSpout {
         this.collector = collector;
         lastReadTxId = 0;
 
+        Configuration conf = new Configuration();
 
         try {
-            URI uri = new URI(hdfsUri);
-            Configuration conf = new Configuration();
-    
-            this.dfs = new HdfsAdmin(uri, conf);
-            this.stream = this.dfs.getInotifyEventStream();
-            this.lastReadTxId = 0;
-        } catch(IOException | URISyntaxException e){
-            collector.reportError(e);
-        }
+			dfs = new HdfsAdmin(hdfsUri, conf);
+			stream = dfs.getInotifyEventStream();
+		} catch (IOException e) {
+			collector.reportError(e);
+		}
     }
     
     @Override

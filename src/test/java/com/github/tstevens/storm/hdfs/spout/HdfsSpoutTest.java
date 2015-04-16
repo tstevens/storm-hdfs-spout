@@ -2,6 +2,8 @@ package com.github.tstevens.storm.hdfs.spout;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -53,7 +55,16 @@ public class HdfsSpoutTest {
 
     @Test
     public void testSpout(){
-        HdfsInotifySpout spout = new HdfsInotifySpout(hdfsURI, "/", "test");
+    	URI hdfsUri;
+		try {
+            hdfsUri = new URI(hdfsURI);
+		} catch (URISyntaxException e1) {
+			e1.printStackTrace();
+			Assert.fail();
+			return;
+		}
+
+        HdfsInotifySpout spout = new HdfsInotifySpout(hdfsUri, "/");
 
         TupleCaptureBolt capture = new TupleCaptureBolt();
 
