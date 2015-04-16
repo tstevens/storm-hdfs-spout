@@ -84,6 +84,7 @@ public class HdfsInotifySpout extends BaseRichSpout {
             collector.reportError(e);
         } catch (MissingEventsException e) {
             // Log? missed updates but able to continue
+            System.out.println("Missed events: " + e.getMessage());
         } catch (InterruptedException e){
             //Ignore and finish
         }
