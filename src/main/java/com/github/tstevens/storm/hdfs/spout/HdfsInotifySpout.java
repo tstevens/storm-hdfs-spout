@@ -72,7 +72,7 @@ public class HdfsInotifySpout extends BaseRichSpout {
                 if(raw_event instanceof CloseEvent){
                     CloseEvent closeEvent = (CloseEvent) raw_event;
                     if(closeEvent.getPath().startsWith(watchedPath)){
-                        collector.emit(streamId, new Values(closeEvent.getPath(), closeEvent.getFileSize(), new Date(closeEvent.getTimestamp())), null);
+                        collector.emit(streamId, new Values(closeEvent.getPath(), closeEvent.getFileSize(), new Date(closeEvent.getTimestamp()), closeEvent.getEventType().toString()), null);
                     }
                 }
             }
@@ -102,6 +102,6 @@ public class HdfsInotifySpout extends BaseRichSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream(streamId, new Fields(PATH_FIELD, SIZE_FIELD, TIME_FIELD));
+        declarer.declareStream(streamId, new Fields( PATH_FIELD, SIZE_FIELD, TIME_FIELD, EVENT_TYPE_FIELD));
     }
 }
