@@ -30,7 +30,7 @@ public class HdfsSpoutTest {
 
     private static MiniDFSCluster hdfsCluster;
 
-    private static String hdfsURI;
+    private static URI hdfsUri;
 
     @BeforeClass
     public static void beforeClass() throws IOException{
@@ -44,7 +44,13 @@ public class HdfsSpoutTest {
         hdfsCluster = builder.build();
         hdfsCluster.waitActive();
 
-        hdfsURI = "hdfs://localhost:"+ hdfsCluster.getNameNodePort() + "/";
+        try {
+            hdfsUri = new URI("hdfs://localhost:"+ hdfsCluster.getNameNodePort() + "/");
+        } catch (URISyntaxException e1) {
+            e1.printStackTrace();
+            Assert.fail();
+            return;
+        }
     }
 
     @AfterClass
@@ -52,20 +58,11 @@ public class HdfsSpoutTest {
         if(hdfsCluster != null){
             hdfsCluster.shutdown();
         }
-        hdfsURI = null;
+        hdfsUri = null;
     }
 
     @Test
     public void testSpout(){
-    	URI hdfsUri;
-		try {
-            hdfsUri = new URI(hdfsURI);
-		} catch (URISyntaxException e1) {
-			e1.printStackTrace();
-			Assert.fail();
-			return;
-		}
-
         HdfsInotifySpout spout = new HdfsInotifySpout(hdfsUri, "/", EnumSet.of(Event.EventType.CLOSE));
 
         TupleCaptureBolt capture = new TupleCaptureBolt();
