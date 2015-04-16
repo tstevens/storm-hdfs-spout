@@ -62,7 +62,7 @@ public class HdfsSpoutTest {
         TopologyBuilder builder = new TopologyBuilder();
 
         builder.setSpout("spout", spout, 1).setNumTasks(1);
-        builder.setBolt("bolt", capture, 1).setNumTasks(1).shuffleGrouping("spout", "test");
+        builder.setBolt("bolt", capture, 1).setNumTasks(1).shuffleGrouping("spout", HdfsInotifySpout.STREAM_ID);
 
         LocalCluster cluster = new LocalCluster();
 
