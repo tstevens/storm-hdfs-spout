@@ -65,7 +65,7 @@ public class HdfsInotifySpout extends BaseRichSpout {
         try {
         	// TODO Save last read txid (HDFS-7446)
             Event raw_event = null;
-            while ((raw_event = this.stream.poll(100, TimeUnit.MILLISECONDS)) !=null ){ // TODO Add jitter to wait time
+            while ((raw_event = stream.poll(100, TimeUnit.MILLISECONDS)) !=null ){ // TODO Add jitter to wait time
                 if(raw_event instanceof CloseEvent){
                     CloseEvent closeEvent = (CloseEvent) raw_event;
                     if(closeEvent.getPath().startsWith(watchedPath)){
@@ -84,14 +84,14 @@ public class HdfsInotifySpout extends BaseRichSpout {
     
     @Override
     public void deactivate() {
-        this.stream = null;
+        stream = null;
     }
     
     @Override
     public void activate() {
     	// TODO Try and restart from last read txid (HDFS-7446)
         try {
-            this.stream = lastReadTxId != 0 ? this.dfs.getInotifyEventStream(lastReadTxId) : this.dfs.getInotifyEventStream();
+            stream = lastReadTxId != 0 ? dfs.getInotifyEventStream(lastReadTxId) : dfs.getInotifyEventStream();
         } catch (IOException e) {
             collector.reportError(e);
         }
