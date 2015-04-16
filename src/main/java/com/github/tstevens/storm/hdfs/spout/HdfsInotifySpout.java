@@ -3,6 +3,7 @@ package com.github.tstevens.storm.hdfs.spout;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -35,14 +36,16 @@ public class HdfsInotifySpout extends BaseRichSpout {
     private ISpoutOutputCollector collector;
     private String watchedPath;
     private URI hdfsUri;
+    EnumSet<Event.EventType> eventTypes;
 
     private HdfsAdmin dfs;
     private DFSInotifyEventInputStream stream;
     private long lastReadTxId;
 
-    public HdfsInotifySpout(URI hdfsUri, String watchedPath){
+    public HdfsInotifySpout(URI hdfsUri, String watchedPath, EnumSet<Event.EventType> eventTypes){
         this.watchedPath = Objects.requireNonNull(watchedPath);
         this.hdfsUri = Objects.requireNonNull(hdfsUri);
+        this.eventTypes = EnumSet.copyOf(Objects.requireNonNull(eventTypes));
     }
 
     @Override
@@ -64,13 +67,17 @@ public class HdfsInotifySpout extends BaseRichSpout {
     public void nextTuple() {
         try {
         	// TODO Save last read txid (HDFS-7446)
-            Event raw_event = null;
+            Event raw_event;
             while ((raw_event = stream.poll(100, TimeUnit.MILLISECONDS)) !=null ){ // TODO Add jitter to wait time
-                if(raw_event instanceof CloseEvent){
-                    CloseEvent closeEvent = (CloseEvent) raw_event;
-                    if(closeEvent.getPath().startsWith(watchedPath)){
-                        collector.emit(STREAM_ID, new Values(closeEvent.getPath(), closeEvent.getFileSize(), new Date(closeEvent.getTimestamp()), closeEvent.getEventType().toString()), null);
+                Event.EventType eventType = raw_event.getEventType();
+                if(eventTypes.contains(eventType)){
+                    if(raw_event instanceof CloseEvent){
+                        CloseEvent closeEvent = (CloseEvent) raw_event;
+                        if(closeEvent.getPath().startsWith(watchedPath)){
+                            collector.emit(STREAM_ID, new Values(closeEvent.getPath(), closeEvent.getFileSize(), new Date(closeEvent.getTimestamp()), closeEvent.getEventType().toString()), null);
+                        }
                     }
+                    //TODO Handle other event types
                 }
             }
         } catch (IOException e) {

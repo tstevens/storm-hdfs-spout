@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.EnumSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hdfs.inotify.Event;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -64,7 +66,7 @@ public class HdfsSpoutTest {
 			return;
 		}
 
-        HdfsInotifySpout spout = new HdfsInotifySpout(hdfsUri, "/");
+        HdfsInotifySpout spout = new HdfsInotifySpout(hdfsUri, "/", EnumSet.of(Event.EventType.CLOSE));
 
         TupleCaptureBolt capture = new TupleCaptureBolt();
 
