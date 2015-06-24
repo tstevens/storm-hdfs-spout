@@ -63,7 +63,7 @@ public class HdfsSpoutTest {
 
     @Test
     public void testSpout(){
-        HdfsInotifySpout spout = new HdfsInotifySpout(hdfsUri, "/", EnumSet.of(Event.EventType.CLOSE));
+        HdfsInotifySpout spout = new HdfsInotifySpout(hdfsUri, "/");
 
         TupleCaptureBolt capture = new TupleCaptureBolt();
 

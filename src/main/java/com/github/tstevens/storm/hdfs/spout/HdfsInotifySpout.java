@@ -37,16 +37,14 @@ public class HdfsInotifySpout extends BaseRichSpout {
     private ISpoutOutputCollector collector;
     private String watchedPath;
     private URI hdfsUri;
-    EnumSet<Event.EventType> eventTypes;
 
     private HdfsAdmin dfs;
     private DFSInotifyEventInputStream stream;
     private long lastReadTxId;
 
-    public HdfsInotifySpout(URI hdfsUri, String watchedPath, EnumSet<Event.EventType> eventTypes){
+    public HdfsInotifySpout(URI hdfsUri, String watchedPath){
         this.watchedPath = Objects.requireNonNull(watchedPath);
         this.hdfsUri = Objects.requireNonNull(hdfsUri);
-        this.eventTypes = EnumSet.copyOf(Objects.requireNonNull(eventTypes));
     }
 
     @Override
