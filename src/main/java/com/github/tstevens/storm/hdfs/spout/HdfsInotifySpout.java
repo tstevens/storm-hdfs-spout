@@ -12,6 +12,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSInotifyEventInputStream;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.inotify.Event;
+import org.apache.hadoop.hdfs.inotify.EventBatch;
 import org.apache.hadoop.hdfs.inotify.MissingEventsException;
 import org.apache.hadoop.hdfs.inotify.Event.CloseEvent;
 
@@ -66,19 +67,23 @@ public class HdfsInotifySpout extends BaseRichSpout {
     @Override
     public void nextTuple() {
         try {
-        	// TODO Save last read txid (HDFS-7446)
-            Event raw_event;
-            while ((raw_event = stream.poll(100, TimeUnit.MILLISECONDS)) !=null ){ // TODO Add jitter to wait time
-                Event.EventType eventType = raw_event.getEventType();
-                if(eventTypes.contains(eventType)){
-                    if(raw_event instanceof CloseEvent){
-                        CloseEvent closeEvent = (CloseEvent) raw_event;
-                        if(closeEvent.getPath().startsWith(watchedPath)){
-                            collector.emit(STREAM_ID, new Values(closeEvent.getPath(), closeEvent.getFileSize(), new Date(closeEvent.getTimestamp()), closeEvent.getEventType().toString()), null);
-                        }
+            EventBatch batch;
+            while ((batch = stream.poll(100, TimeUnit.MILLISECONDS)) !=null ){ // TODO Add jitter to wait time
+                for(Event raw_event : batch.getEvents()){
+                    raw_event.getEventType();
+                    switch (raw_event.getEventType()){
+                        case CLOSE:
+                            CloseEvent closeEvent = (CloseEvent) raw_event;
+                            if(closeEvent.getPath().startsWith(watchedPath)){
+                                collector.emit(STREAM_ID, new Values(closeEvent.getPath(), closeEvent.getFileSize(), new Date(closeEvent.getTimestamp()), closeEvent.getEventType().toString()), null);
+                            }
+                            break;
+                        default:
+                            //TODO Handle other event types
+                            break;
                     }
-                    //TODO Handle other event types
                 }
+                lastReadTxId = batch.getTxid();
             }
         } catch (IOException e) {
             collector.reportError(e);
@@ -97,7 +102,6 @@ public class HdfsInotifySpout extends BaseRichSpout {
     
     @Override
     public void activate() {
-    	// TODO Try and restart from last read txid (HDFS-7446)
         try {
             stream = lastReadTxId != 0 ? dfs.getInotifyEventStream(lastReadTxId) : dfs.getInotifyEventStream();
         } catch (IOException e) {
